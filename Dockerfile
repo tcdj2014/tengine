@@ -52,10 +52,6 @@ ENV CONFIG "\
         --with-compat \
         --with-file-aio \
         --with-http_v2_module \
-        --with-luajit-lib=/usr/local/lib/ \
-        --with-luajit-inc=/usr/local/include/luajit-2.1/ \
-        --with-lua-inc=/usr/local/include/luajit-2.1/ \
-        --with-lua-lib=/usr/local/lib/ \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
 	    --add-module=modules/ngx_http_upstream_session_sticky_module \
@@ -86,10 +82,11 @@ RUN     addgroup -S nginx \
         && tar zxvf lua.tar.gz \
         && cd LuaJIT-2.1.0-beta3 \
         && make \
-        && make install \
-        && ln -sf luajit-2.1.0-beta3 /usr/local/bin/luajit \
-        && export LUAJIT_LIB=/usr/lib \
-        && export LUAJIT_INC=/usr/include/luajit-2.1
+        && make install PREFIX=/app/luajit \
+        && export LUAJIT_LIB=/app/luajit/lib/ \
+        && export LUAJIT_INC=/app/luajit/include/luajit-2.1/
+        && test -e /etc/profile.d/luajit.sh && . /etc/profile.d/luajit.sh \
+        && test -e /app/luajit/lib/libluajit-5.1.so.2  && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
 
 RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
         && mkdir -p /usr/src \
