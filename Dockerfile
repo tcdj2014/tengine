@@ -86,6 +86,7 @@ RUN     addgroup -S nginx \
         && cd LuaJIT-2.1.0-beta3 \
         && make \
         && make install \
+        && ln -sf luajit-2.1.0-beta3 /usr/local/bin/luajit \
         && export LUAJIT_LIB=/usr/lib \
         && export LUAJIT_INC=/usr/include/luajit-2.1
 
