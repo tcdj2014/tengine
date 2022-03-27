@@ -82,7 +82,8 @@ RUN     addgroup -S nginx \
                 curl \
                 libxslt-dev \
                 gd-dev \
-                geoip-dev
+                geoip-dev \
+                git
 #        && wget http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz -O lua.tar.gz \
 #        && tar zxvf lua.tar.gz \
 #        && cd LuaJIT-2.1.0-beta3 \
