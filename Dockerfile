@@ -84,7 +84,8 @@ RUN     addgroup -S nginx \
         && cd LuaJIT-2.0.5 \
         && make install prefix=/usr/local/luajit \
         && make install \
-        && ln -sf /usr/local/lib/libluajit-5.1.so /lib/libluajit-5.1.so.2
+        && ln -sf /usr/local/lib/libluajit-5.1.so /lib/libluajit-5.1.so.2 \
+        && ls -l /usr/local/include
 
 RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
         && mkdir -p /usr/src \
