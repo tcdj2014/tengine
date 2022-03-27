@@ -53,8 +53,8 @@ ENV CONFIG "\
         --with-file-aio \
         --with-http_v2_module \
         --with-luajit-lib=/usr/local/lib/ \
-        --with-luajit-inc=/usr/local/include/luajit-2.0/ \
-        --with-lua-inc=/usr/local/include/luajit-2.0/ \
+        --with-luajit-inc=/usr/local/include/luajit-2.1/ \
+        --with-lua-inc=/usr/local/include/luajit-2.1/ \
         --with-lua-lib=/usr/local/lib/ \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
