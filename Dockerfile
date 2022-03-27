@@ -52,6 +52,7 @@ ENV CONFIG "\
         --with-compat \
         --with-file-aio \
         --with-http_v2_module \
+        --with-ld-opt=-Wl,-rpath,/app/luajit/luajit/lib \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
 	    --add-module=modules/ngx_http_upstream_session_sticky_module \
@@ -84,9 +85,11 @@ RUN     addgroup -S nginx \
         && make \
         && make install PREFIX=/app/luajit \
         && export LUAJIT_LIB=/app/luajit/lib/ \
-        && export LUAJIT_INC=/app/luajit/include/luajit-2.1/
-        && test -e /etc/profile.d/luajit.sh && . /etc/profile.d/luajit.sh \
-        && test -e /app/luajit/lib/libluajit-5.1.so.2  && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
+        && export LUAJIT_INC=/app/luajit/include/luajit-2.1/ \
+        && test -e /etc/profile.d/luajit.sh
+        && . /etc/profile.d/luajit.sh \
+        && test -e /app/luajit/lib/libluajit-5.1.so.2 \
+        && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
 
 RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
         && mkdir -p /usr/src \
