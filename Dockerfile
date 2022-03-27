@@ -86,8 +86,6 @@ RUN     addgroup -S nginx \
         && make install PREFIX=/app/luajit \
         && export LUAJIT_LIB=/app/luajit/lib/ \
         && export LUAJIT_INC=/app/luajit/include/luajit-2.1/ \
-        && test -e /etc/profile.d/luajit.sh \
-        && . /etc/profile.d/luajit.sh \
         && test -e /app/luajit/lib/libluajit-5.1.so.2 \
         && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
 
