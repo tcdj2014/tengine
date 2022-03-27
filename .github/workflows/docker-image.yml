@@ -1,24 +1,24 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    push:
+        branches: [ master ]
+    pull_request:
+        branches: [ master ]
 
 jobs:
 
-  build:
+    build:
 
-    runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      env:
-        aliyun_username: ${{ secrets.Aliyun_Username }}
-        aliyun_password: ${{ secrets.Aliyun_Password }}
-      run: echo "${aliyun_password}" | docker login --username=${aliyun_username} --password-stdin registry.cn-shanghai.aliyuncs.com
-#        docker build . --file Dockerfile --tag tengine:v1.0
-#        docker tag tengine:v1.0 registry.cn-beijing.aliyuncs.com/xmtang/test:v1.0
-#        docker pushregistry.cn-shanghai.aliyuncs.com/xmtang/test:v1.0
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Build the Docker image
+                env:
+                    aliyun_username: ${{ secrets.Aliyun_Username }}
+                    aliyun_password: ${{ secrets.Aliyun_Password }}
+                run: echo "${aliyun_password}" | docker login --username=${aliyun_username} --password-stdin registry.cn-shanghai.aliyuncs.com \
+                    && docker build . --file Dockerfile --tag tengine:v1.0 \
+                    && docker tag tengine:v1.0 registry.cn-beijing.aliyuncs.com/xmtang/test:v1.0 \
+                    && docker pushregistry.cn-shanghai.aliyuncs.com/xmtang/test:v1.0
