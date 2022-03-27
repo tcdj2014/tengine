@@ -80,12 +80,14 @@ RUN     addgroup -S nginx \
                 gd-dev \
                 geoip-dev \
                 lua \
-        && wget http://luajit.org/download/LuaJIT-2.0.5.tar.gz -O lua.tar.gz \
+                luajit-dev \
+        && wget http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz -O lua.tar.gz \
         && tar zxvf lua.tar.gz \
-        && cd LuaJIT-2.0.5 \
-        && make install prefix=/usr/local/luajit \
+        && cd LuaJIT-2.1.0-beta3 \
+        && make \
         && make install \
-        && ln -sf /usr/local/lib/libluajit-5.1.so /lib/libluajit-5.1.so.2
+        && export LUAJIT_LIB=/usr/lib \
+        && export LUAJIT_INC=/usr/include/luajit-2.1
 
 RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
         && mkdir -p /usr/src \
