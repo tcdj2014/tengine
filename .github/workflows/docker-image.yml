@@ -15,11 +15,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag tengine:v1.0
       env:
         aliyun_username: ${{ secrets.Aliyun_Username }}
         aliyun_password: ${{ secrets.Aliyun_Password }}
-        run: docker login --username=${aliyun_username} registry.cn-shanghai.aliyuncs.com --password=${{ secrets.aliyun_password }} \
+      run: docker login --username=${aliyun_username} registry.cn-shanghai.aliyuncs.com --password=${{ secrets.aliyun_password }} \
         && docker build . --file Dockerfile --tag tengine:v1.0 \
         && docker tag tengine:v1.0 registry.cn-beijing.aliyuncs.com/xmtang/test:v1.0 \
         && docker pushregistry.cn-shanghai.aliyuncs.com/xmtang/test:v1.0
