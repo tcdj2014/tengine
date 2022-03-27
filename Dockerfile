@@ -59,7 +59,7 @@ ENV CONFIG "\
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
 	    --add-module=modules/ngx_http_upstream_session_sticky_module \
-        --add-module=modules/ngx_devel_kit-0.3.0 \
+        --add-module=modules/ngx_devel_kit-0.3.1 \
         --add-module=modules/lua-nginx-module-0.10.20 \
         "
 RUN     addgroup -S nginx \
