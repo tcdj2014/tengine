@@ -100,7 +100,7 @@ RUN     addgroup -S nginx \
 RUN     git clone https://github.com/openresty/luajit2.git \
         && cd luajit2 \
         && make \
-        && make install PREFIX=/app/luajit
+        && make install PREFIX=/app/luajit \
         && ls -l /app/luajit \
         && ls -l /app/luajit/lib \
         && ls -l /app/luajit/include \
