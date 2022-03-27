@@ -68,6 +68,7 @@ RUN     addgroup -S nginx \
         && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
         && apk add --no-cache --virtual .build-deps \
                 musl-dev \
+                libgcc \
                 gcc \
                 libc-dev \
                 make \
