@@ -2,8 +2,8 @@ FROM alpine:3.14
 
 
 ENV TENGINE_VERSION 2.3.3
-
-# nginx: https://git.io/vSIyj
+ENV NGX_DEVEL_KIT https://github.com/vision5/ngx_devel_kit/archive/v0.3.1.tar.gz
+ENV LUA_NGINX_MODULE https://github.com/openresty/lua-nginx-module/archive/v0.10.20.tar.gz
 
 RUN rm -rf /var/cache/apk/* && \
     rm -rf /tmp/*
@@ -52,14 +52,22 @@ ENV CONFIG "\
         --with-compat \
         --with-file-aio \
         --with-http_v2_module \
+        --with-luajit-lib=/usr/local/lib/ \
+        --with-luajit-inc=/usr/local/include/luajit-2.1/ \
+        --with-lua-inc=/usr/local/include/luajit-2.1/ \
+        --with-lua-lib=/usr/local/lib/ \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
-	--add-module=modules/ngx_http_upstream_session_sticky_module \
+	    --add-module=modules/ngx_http_upstream_session_sticky_module \
+        --add-module=modules/ngx_devel_kit-0.3.0 \
+        --add-module=modules/lua-nginx-module-0.10.20 \
         "
 RUN     addgroup -S nginx \
         && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
         && adduser -u 82 -D -S -G www-data www-data \
+        && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
         && apk add --no-cache --virtual .build-deps \
+                musl-dev \
                 gcc \
                 libc-dev \
                 make \
@@ -71,18 +79,32 @@ RUN     addgroup -S nginx \
                 libxslt-dev \
                 gd-dev \
                 geoip-dev \
-        && curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
+        && wget http://luajit.org/download/LuaJIT-2.0.5.tar.gz -O lua.tar.gz \
+        && tar zxvf lua.tar.gz \
+        && cd LuaJIT-2.0.5 \
+        && make install prefix=/usr/local/luajit \
+        && make install \
+        && ln -sf /usr/local/lib/libluajit-5.1.so /lib64/libluajit-5.1.so.2
+
+RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
         && mkdir -p /usr/src \
         && tar -zxC /usr/src -f tengine.tar.gz \
         && rm tengine.tar.gz \
         && cd /usr/src/tengine-$TENGINE_VERSION \
         && curl -L "https://github.com/openresty/headers-more-nginx-module/archive/v0.33.tar.gz" -o more.tar.gz \
         && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f more.tar.gz \
-	&& rm  more.tar.gz \
-	&& ls -l /usr/src/tengine-$TENGINE_VERSION/modules \
-	&& ./configure $CONFIG --with-debug \
+	    && rm  more.tar.gz \
+	    && wget $NGX_DEVEL_KIT \
+        && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f v0.3.1.tar.gz \
+        && rm v0.3.1.tar.gz \
+        && wget $LUA_NGINX_MODULE \
+        && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f v0.10.20.tar.gz \
+        && rm v0.10.20.tar.gz \
+	    && ls -l /usr/src/tengine-$TENGINE_VERSION/modules \
+	    && ./configure $CONFIG --with-debug \
         && make -j$(getconf _NPROCESSORS_ONLN) \
         && mv objs/nginx objs/nginx-debug \
+        && ls -l objs \
         && mv objs/ngx_http_xslt_filter_module.so objs/ngx_http_xslt_filter_module-debug.so \
         && mv objs/ngx_http_image_filter_module.so objs/ngx_http_image_filter_module-debug.so \
         && mv objs/ngx_http_geoip_module.so objs/ngx_http_geoip_module-debug.so \

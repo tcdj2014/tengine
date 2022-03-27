@@ -1,0 +1,39 @@
+
+upstream minio {
+        server 10.0.16.7:82;
+ }     
+ server {
+        listen       80;
+        server_name  localhost;
+        root  /data/cosfs/img;
+
+  	if ($ip_whitelist != 1) {
+  	    return 403;
+	}
+	location /addip {
+		content_by_lua '
+		CLIENT_IP = ngx.req.get_headers()["X_real_ip"]
+		if CLIENT_IP == nil then
+ 		 CLIENT_IP = ngx.req.get_headers()["X_Forwarded_For"]
+		end
+		if CLIENT_IP == nil then
+ 		 CLIENT_IP = ngx.var.remote_addr
+		end
+		if CLIENT_IP == nil then
+ 	 	 CLIENT_IP = "unknown"
+		end
+		 ngx.header.content_type = "text/html;charset=UTF-8";
+ 		 ngx.say("你的IP : "..CLIENT_IP.."<br/>");
+ 		 os.execute("/ngx_add.sh "..CLIENT_IP.."")
+ 		 ngx.say("添加白名单完成，有效时间最长为2小时");
+		';
+	}
+
+	location ~ /img/ {
+                proxy_pass http://minio;
+        }
+        location ~ .*\.(gif|jpg|ico|jpeg|png|bmp|swf|js|json|css|woff|woff2|ttf|html|coffee|map|mp3|wav|svg)$
+        {
+          expires max;
+	}
+}
