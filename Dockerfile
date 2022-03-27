@@ -83,19 +83,28 @@ RUN     addgroup -S nginx \
                 libxslt-dev \
                 gd-dev \
                 geoip-dev \
-        && wget http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz -O lua.tar.gz \
-        && tar zxvf lua.tar.gz \
-        && cd LuaJIT-2.1.0-beta3 \
+#        && wget http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz -O lua.tar.gz \
+#        && tar zxvf lua.tar.gz \
+#        && cd LuaJIT-2.1.0-beta3 \
+#        && make \
+#        && make install PREFIX=/app/luajit \
+#        && export LUAJIT_LIB=/app/luajit/lib/ \
+#        && export LUAJIT_INC=/app/luajit/include/luajit-2.1/ \
+#        && ls -l /app/luajit \
+#        && ls -l /app/luajit/lib \
+#        && ls -l /app/luajit/include \
+#        && ls -l /app/luajit/include/luajit-2.1 \
+#        && test -e /app/luajit/lib/libluajit-5.1.so.2 \
+#        && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
+
+RUN     git clone https://github.com/openresty/luajit2.git \
+        && cd luajit2 \
         && make \
-        && make install PREFIX=/app/luajit \
-        && export LUAJIT_LIB=/app/luajit/lib/ \
-        && export LUAJIT_INC=/app/luajit/include/luajit-2.1/ \
+        && make install PREFIX=/app/luajit
         && ls -l /app/luajit \
         && ls -l /app/luajit/lib \
         && ls -l /app/luajit/include \
-        && ls -l /app/luajit/include/luajit-2.1 \
-        && test -e /app/luajit/lib/libluajit-5.1.so.2 \
-        && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
+        && ls -l /app/luajit/include/luajit-2.1
 
 RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar.gz" -o tengine.tar.gz \
         && mkdir -p /usr/src \
