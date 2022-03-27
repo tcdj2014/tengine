@@ -52,10 +52,10 @@ ENV CONFIG "\
         --with-compat \
         --with-file-aio \
         --with-http_v2_module \
-        --with-luajit-lib=/app/luajit/luajit/lib/ \
-        --with-luajit-inc=/app/luajit/include/luajit-2.1/ \
-        --with-lua-inc=/app/luajit/include/luajit-2.1/ \
-        --with-lua-lib=/app/luajit/luajit/lib/ \
+        --with-luajit-lib=/app/luajit/luajit/lib \
+        --with-luajit-inc=/app/luajit/include/luajit-2.1 \
+        --with-lua-inc=/app/luajit/include/luajit-2.1 \
+        --with-lua-lib=/app/luajit/luajit/lib \
         --with-ld-opt=-Wl,-rpath,/app/luajit/luajit/lib \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
@@ -89,7 +89,9 @@ RUN     addgroup -S nginx \
         && export LUAJIT_LIB=/app/luajit/lib/ \
         && export LUAJIT_INC=/app/luajit/include/luajit-2.1/ \
         && ls -l /app/luajit \
+        && ls -l /app/luajit/lib \
         && ls -l /app/luajit/include \
+        && ls -l /app/luajit/include/luajit-2.1 \
         && test -e /app/luajit/lib/libluajit-5.1.so.2 \
         && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
 
