@@ -154,6 +154,10 @@ RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar
         && ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY proxy.conf /etc/nginx/proxy.conf
+COPY ip.conf /etc/nginx/ip.conf
+COPY ip.conf.default /etc/nginx/ip.conf.default
+COPY confs /etc/nginx/confs
 
 EXPOSE 80 443
 
