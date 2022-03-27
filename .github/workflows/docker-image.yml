@@ -18,7 +18,7 @@ jobs:
       env:
         aliyun_username: ${{ secrets.Aliyun_Username }}
         aliyun_password: ${{ secrets.Aliyun_Password }}
-      run: docker login --username=${aliyun_username} --password-stdin=${aliyun_password} registry.cn-shanghai.aliyuncs.com
+      run: cat ${aliyun_password} |docker login --username=${aliyun_username} --password-stdin registry.cn-shanghai.aliyuncs.com
 #        docker build . --file Dockerfile --tag tengine:v1.0
 #        docker tag tengine:v1.0 registry.cn-beijing.aliyuncs.com/xmtang/test:v1.0
 #        docker pushregistry.cn-shanghai.aliyuncs.com/xmtang/test:v1.0
