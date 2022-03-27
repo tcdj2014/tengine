@@ -89,7 +89,7 @@ RUN     addgroup -S nginx \
         && export LUAJIT_LIB=/app/luajit/lib/ \
         && export LUAJIT_INC=/app/luajit/include/luajit-2.1/ \
         && ls -l /app/luajit \
-        && ls -l app/luajit/include \
+        && ls -l /app/luajit/include \
         && test -e /app/luajit/lib/libluajit-5.1.so.2 \
         && ln -s  /app/luajit/lib/libluajit-5.1.so.2 /lib/
 
