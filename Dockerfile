@@ -52,6 +52,10 @@ ENV CONFIG "\
         --with-compat \
         --with-file-aio \
         --with-http_v2_module \
+        --with-luajit-lib=/app/luajit/luajit/lib/ \
+        --with-luajit-inc=/app/luajit/include/luajit-2.1/ \
+        --with-lua-inc=/app/luajit/include/luajit-2.1/ \
+        --with-lua-lib=/app/luajit/luajit/lib/ \
         --with-ld-opt=-Wl,-rpath,/app/luajit/luajit/lib \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
