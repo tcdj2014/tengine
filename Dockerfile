@@ -2,8 +2,10 @@ FROM alpine:3.15.2
 
 
 ENV TENGINE_VERSION 2.3.3
-ENV NGX_DEVEL_KIT https://github.com/vision5/ngx_devel_kit/archive/v0.3.1.tar.gz
-ENV LUA_NGINX_MODULE https://github.com/openresty/lua-nginx-module/archive/v0.10.20.tar.gz
+ENV NGX_DEVEL_KIT_V 0.3.1
+ENV NGX_DEVEL_KIT https://github.com/vision5/ngx_devel_kit/archive/v$NGX_DEVEL_KIT_V.tar.gz
+ENV LUA_NGINX_MODULE_V 0.10.20
+ENV LUA_NGINX_MODULE https://github.com/openresty/lua-nginx-module/archive/v$LUA_NGINX_MODULE_V.tar.gz
 
 RUN rm -rf /var/cache/apk/* && \
     rm -rf /tmp/*
@@ -60,8 +62,8 @@ ENV CONFIG "\
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.33 \
 	    --add-module=modules/ngx_http_upstream_session_sticky_module \
-        --add-module=modules/ngx_devel_kit-0.3.1 \
-        --add-module=modules/lua-nginx-module-0.10.20 \
+        --add-module=modules/ngx_devel_kit-$NGX_DEVEL_KIT_V \
+        --add-module=modules/lua-nginx-module-$LUA_NGINX_MODULE_V \
         "
 RUN     addgroup -S nginx \
         && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
@@ -104,11 +106,11 @@ RUN     curl -L "https://github.com/alibaba/tengine/archive/$TENGINE_VERSION.tar
         && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f more.tar.gz \
 	    && rm  more.tar.gz \
 	    && wget $NGX_DEVEL_KIT \
-        && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f v0.3.1.tar.gz \
-        && rm v0.3.1.tar.gz \
+        && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f v$NGX_DEVEL_KIT_V.tar.gz \
+        && rm v$NGX_DEVEL_KIT_V.tar.gz \
         && wget $LUA_NGINX_MODULE \
-        && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f v0.10.20.tar.gz \
-        && rm v0.10.20.tar.gz \
+        && tar -zxC /usr/src/tengine-$TENGINE_VERSION/modules -f v$LUA_NGINX_MODULE_V.tar.gz \
+        && rm v$LUA_NGINX_MODULE_V.tar.gz \
 	    && ls -l /usr/src/tengine-$TENGINE_VERSION/modules \
 	    && ./configure $CONFIG --with-debug \
         && make -j$(getconf _NPROCESSORS_ONLN) \
