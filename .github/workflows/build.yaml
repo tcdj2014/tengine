@@ -1,0 +1,86 @@
+name: Tengine-Base
+
+on:
+    workflow_dispatch:
+    # 只匹配标签推送：push 分支不会触发，推 v* 标签必定构建。
+    # 注意不要在这里再加 paths：tags 与 paths 同时存在时两者必须同时满足，
+    # 而推标签通常没有文件变更，会导致永远不触发
+    push:
+        tags:
+            - 'v*'
+
+
+env:
+    ALIYUN_REGISTRY: "${{ vars.ALIYUN_REGISTRY }}"
+    ALIYUN_NAME_SPACE: "${{ vars.ALIYUN_NAME_SPACE }}"
+    ALIYUN_REGISTRY_USER: "${{ secrets.ALIYUN_REGISTRY_USER }}"
+    ALIYUN_REGISTRY_PASSWORD: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
+
+jobs:
+
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Before freeing up disk space
+                run: |
+                    echo "Before freeing up disk space"
+                    echo "=============================================================================="
+                    df -hT
+                    echo "=============================================================================="
+
+            # 增加可用磁盘空间：只删除用不到的组件，不缩小根分区。
+            # 新版 ubuntu-latest 的 Docker 使用 containerd 镜像存储，镜像层解压在
+            # /var/lib/containerd（位于根分区），根分区太小会导致
+            # "ERROR: failed to extract layer ... no space left on device"
+            -   name: Free up disk space
+                run: |
+                    sudo rm -rf /usr/share/dotnet \
+                                /usr/local/lib/android \
+                                /opt/ghc \
+                                /opt/hostedtoolcache/CodeQL \
+                                /usr/local/share/boost
+                    sudo docker system prune -af --volumes || true
+
+            -   name: Free up disk space complete
+                run: |
+                    echo "Free up disk space complete"
+                    echo "=============================================================================="
+                    df -hT
+                    echo "=============================================================================="
+
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+
+            -   name: Set up QEMU
+                uses: docker/setup-qemu-action@v3
+
+            -   name: Docker Setup Buildx
+                uses: docker/setup-buildx-action@v3
+
+            -   name: Set the value
+                id: step_one
+                run: |
+                    tag=$(echo "${{ github.ref }}" | sed -e "s,.*/\(.*\),\1,")
+                    echo "TAG_VERSION=$tag" >> "$GITHUB_ENV"
+
+            -   name: Use the value
+                id: step_two
+                run: |
+                    printf 'TAG是%s\n' "$TAG_VERSION" # This will output TAG_VERSION
+
+            -   name: Login to DockerHub
+                uses: docker/login-action@v3
+                with:
+                    registry: ${{ vars.ALIYUN_REGISTRY }}
+                    username: ${{ secrets.ALIYUN_REGISTRY_USER }}
+                    password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+
+            -   name: Build and push tengine base
+                uses: docker/build-push-action@v6
+                with:
+                    file: Dockerfile
+                    context: .
+                    platforms: linux/amd64,linux/arm64
+                    push: true
+                    tags: ${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:base-latest,${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:base-${{ env.TAG_VERSION }}
