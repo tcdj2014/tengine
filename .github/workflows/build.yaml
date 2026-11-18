@@ -83,4 +83,9 @@ jobs:
                     context: .
                     platforms: linux/amd64,linux/arm64
                     push: true
+                    # 阿里云 ACR 不认识 buildx 默认附带的 provenance 证明清单
+                    # （manifest list 里会出现 application/vnd.oci.empty.v1+json，
+                    #  推送时报 denied: unknown manifest class for application/vnd.oci.empty.v1+json）
+                    provenance: false
+                    sbom: false
                     tags: ${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:latest,${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:${{ env.TAG_VERSION }}
