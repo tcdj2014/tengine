@@ -8,9 +8,27 @@
 - `ngx_http_upstream_check_module` 健康检查
 - `headers-more-nginx-module 0.37`（`more_clear_headers` 等）
 - `ngx_http_upstream_session_sticky_module` 会话保持
-- 常规 http/stream/mail 模块 + xslt / image_filter / geoip 动态模块
+- 常规 http/stream/mail 模块 + xslt / image_filter / geoip / stream_geoip 动态模块
 
 `TENGINE_VERSION` 构建参数留空时，自动取 GitHub 最新 release。
+CI 不传该参数，因此 **构建的始终是上游最新 release，tag 只是镜像标签**。
+需要固定版本时用本地构建传 `--build-arg`。
+
+## 镜像内容
+
+| 项 | 值 |
+| --- | --- |
+| 可执行文件 | `/usr/sbin/nginx`、`/usr/sbin/nginx-debug` |
+| 主配置 | `/etc/nginx/nginx.conf`（由 `base-nginx.conf` 覆盖） |
+| 站点配置目录 | `/etc/nginx/conf.d/`（`WORKDIR` 所在，`base-proxy.conf` 在此） |
+| 动态模块 | `/usr/lib/nginx/modules/`（xslt / image_filter / geoip / stream_geoip） |
+| 运行用户 | `nginx:nginx`；另建 `www-data`（uid 82） |
+| 端口 | `80`、`443` |
+| 日志 | access / error 软链到 stdout / stderr，交给容器日志驱动 |
+| 额外依赖 | `tzdata`、`curl`、`ca-certificates`（支持 `TZ` 时区变量） |
+| 信号 | `STOPSIGNAL SIGTERM`，`CMD nginx -g daemon off;` |
+
+镜像不再预建 `/opt/wms-static`、`/opt/ots-static` 之类静态目录，业务镜像按需自行 `mkdir` 或挂载卷。
 
 ## 文件
 
@@ -26,15 +44,21 @@
 
 ```shell
 ./build.sh
-# 指定版本
+# 指定 tengine 源码版本
 docker build --pull --no-cache --build-arg TENGINE_VERSION=3.1.0 -t tengine:latest .
 ```
 
 ## CI 构建
 
 - 手动触发：Actions → Tengine-Base → Run workflow
-- 推送 `v*` 标签自动触发：`git tag -a v0.1 -m "..." && git push origin v0.1`
-  （workflow 的 `push` 只匹配 tag，推 branch 不会触发）
+- 推送任意 tag 自动触发（workflow 为 `push.tags: '*'`），推 branch 不会触发：
+
+```shell
+git tag -a 3.2 -m "tengine 3.2"
+git push origin 3.2
+```
+
+推送后产出 `tengine:3.2`（tag 名即版本标签），同时更新 `tengine:latest`。
 
 需要配置仓库 Variables / Secrets：
 
