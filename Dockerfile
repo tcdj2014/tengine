@@ -138,9 +138,7 @@ RUN   if [ -z "$TENGINE_VERSION" ]; then \
       && apk add --no-cache curl ca-certificates \
       # forward request and error logs to docker log collector
       && ln -sf /dev/stdout /var/log/nginx/access.log \
-      && ln -sf /dev/stderr /var/log/nginx/error.log \
-      && mkdir -p /opt/wms-static \
-      && mkdir -p /opt/ots-static
+      && ln -sf /dev/stderr /var/log/nginx/error.log
 
 EXPOSE 80 443
 COPY base-nginx.conf /etc/nginx/nginx.conf
