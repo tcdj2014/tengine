@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build --pull --no-cache -t tengine:base-latest .
+docker build --pull --no-cache -t tengine:latest .

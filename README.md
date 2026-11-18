@@ -1,6 +1,6 @@
-# tengine-base
+# tengine
 
-基于 `alpine` 从源码编译 [alibaba/tengine](https://github.com/alibaba/tengine)，产出基础镜像 `tengine:base-latest`，
+基于 `alpine` 从源码编译 [alibaba/tengine](https://github.com/alibaba/tengine)，产出基础镜像 `tengine:latest`（版本标签 `tengine:<tag>`），
 供业务镜像 `FROM` 二次封装（静态资源、反代配置等）。
 
 已编译模块（见 `Dockerfile` 中的 `CONFIG`）：
@@ -27,7 +27,7 @@
 ```shell
 ./build.sh
 # 指定版本
-docker build --pull --no-cache --build-arg TENGINE_VERSION=3.1.0 -t tengine:base-latest .
+docker build --pull --no-cache --build-arg TENGINE_VERSION=3.1.0 -t tengine:latest .
 ```
 
 ## CI 构建
@@ -45,4 +45,4 @@ docker build --pull --no-cache --build-arg TENGINE_VERSION=3.1.0 -t tengine:base
 | `ALIYUN_REGISTRY_USER` | Secrets | 仓库用户名 |
 | `ALIYUN_REGISTRY_PASSWORD` | Secrets | 仓库密码 |
 
-推送结果：`<registry>/<namespace>/tengine:base-latest` 与 `tengine:base-<tag>`。
+推送结果：`<registry>/<namespace>/tengine:latest` 与 `tengine:<tag>`（如 `tengine:3.2`）。
