@@ -111,7 +111,7 @@ RUN   if [ -z "$TENGINE_VERSION" ]; then \
       && ln -s ../../usr/lib/nginx/modules /etc/nginx/modules \
       && strip /usr/sbin/nginx* \
       && strip /usr/lib/nginx/modules/*.so \
-      && rm -rf /usr/src/tengine-$NGINX_VERSION \
+      && rm -rf /usr/src/tengine-$TENGINE_VERSION \
       \
       # Bring in gettext so we can get `envsubst`, then throw
       # the rest away. To do this, we need to install `gettext`
