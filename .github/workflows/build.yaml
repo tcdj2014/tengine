@@ -83,4 +83,4 @@ jobs:
                     context: .
                     platforms: linux/amd64,linux/arm64
                     push: true
-                    tags: ${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:base-latest,${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:base-${{ env.TAG_VERSION }}
+                    tags: ${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:latest,${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:${{ env.TAG_VERSION }}
