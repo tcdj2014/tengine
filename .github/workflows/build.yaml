@@ -2,13 +2,12 @@ name: Tengine-Base
 
 on:
     workflow_dispatch:
-    # 只匹配标签推送：push 分支不会触发。
+    # 只匹配标签推送：push 分支不会触发，推 v* 标签必定构建。
     # 注意不要在这里再加 paths：tags 与 paths 同时存在时两者必须同时满足，
     # 而推标签通常没有文件变更，会导致永远不触发
     push:
         tags:
-            - 'v*'        # v0.3、v3.2 之类
-            - '[0-9]*'    # 纯数字版本号，如 3.2
+            - '*'
 
 
 env:
