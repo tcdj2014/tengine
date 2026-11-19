@@ -18,6 +18,7 @@ CI 不传该参数，因此 **构建的始终是上游最新 release，tag 只�
 
 | 项 | 值 |
 | --- | --- |
+| 基础镜像 | `alpine:3.24` |
 | 可执行文件 | `/usr/sbin/nginx`、`/usr/sbin/nginx-debug` |
 | 主配置 | `/etc/nginx/nginx.conf`（由 `base-nginx.conf` 覆盖） |
 | 站点配置目录 | `/etc/nginx/conf.d/`（`WORKDIR` 所在，`base-proxy.conf` 在此） |
