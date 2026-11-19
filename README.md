@@ -50,15 +50,34 @@ docker build --pull --no-cache --build-arg TENGINE_VERSION=3.1.0 -t tengine:late
 
 ## CI 构建
 
-- 手动触发：Actions → Tengine-Base → Run workflow
-- 推送任意 tag 自动触发（workflow 为 `push.tags: '*'`），推 branch 不会触发：
+触发条件（workflow 为 `push.tags: '*'`）：
+
+- **推 tag** 才会构建，推 branch **不会**触发
+- 也可在 Actions → Tengine-Base → Run workflow 手动触发
+
+### 发布新版本
 
 ```shell
-git tag -a 3.2 -m "tengine 3.2"
-git push origin 3.2
+git push origin main                 # 先推代码，不触发构建
+git tag -a 3.3 -m "tengine 3.3"      # tag 名即镜像版本标签
+git push origin 3.3                  # 触发构建
 ```
 
-推送后产出 `tengine:3.2`（tag 名即版本标签），同时更新 `tengine:latest`。
+产出 `tengine:3.3` 与 `tengine:latest`。
+
+### 覆盖已有版本
+
+改动需要重新产出同名镜像时，强制更新 tag（同样会触发一次新构建）：
+
+```shell
+git tag -f -a 3.2 -m "tengine 3.2" HEAD
+git push -f origin 3.2
+```
+
+注意：
+
+- `tengine:latest` 每次构建都会被覆盖，业务侧引用建议固定版本号（如 `tengine:3.2`）
+- 强制覆盖 tag 会改写远端 tag，其他人已经拉取的旧 tag 需要手动更新
 
 需要配置仓库 Variables / Secrets：
 
