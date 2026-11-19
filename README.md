@@ -35,7 +35,8 @@ CI 不传该参数，因此 **构建的始终是上游最新 release，tag 只�
 
 | 文件 | 说明 |
 | --- | --- |
-| `Dockerfile` | 编译脚本（先带 debug 编一份，再去掉 debug 编一份安装） |
+| `Dockerfile` | 镜像定义：基础镜像、COPY 配置、端口、启动命令 |
+| `install.sh` | 编译安装脚本：configure 参数、debug/正式两遍编译、清理构建依赖（由 Dockerfile 的 RUN 调用） |
 | `base-nginx.conf` | 主配置，构建时 COPY 到 `/etc/nginx/nginx.conf` |
 | `base-proxy.conf` | 反代公共配置，COPY 到 `/etc/nginx/conf.d/` |
 | `build.sh` | 本地构建 |
