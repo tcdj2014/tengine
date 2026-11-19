@@ -12,6 +12,9 @@ RUN rm -rf /var/cache/apk/* && \
 # 本地打包修改镜像源
 # RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
+# Alpine 3.24 起为 GCC 15，新增 -Wunterminated-string-initialization 告警
+# （tengine 3.1.0 的 ngx_http_v2_filter_module.c 会触发），
+# nginx 自带 -Werror 会把它变成错误，这里降级为告警保证能编译
 ENV CONFIG "\
         --prefix=/etc/nginx \
         --sbin-path=/usr/sbin/nginx \
@@ -56,6 +59,7 @@ ENV CONFIG "\
         --with-compat \
         --with-file-aio \
         --with-http_v2_module \
+        --with-cc-opt=-Wno-error=unterminated-string-initialization \
         --add-module=modules/ngx_http_upstream_check_module \
         --add-module=modules/headers-more-nginx-module-0.37 \
 	--add-module=modules/ngx_http_upstream_session_sticky_module \
