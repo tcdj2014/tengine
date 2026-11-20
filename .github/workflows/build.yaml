@@ -2,7 +2,7 @@ name: Tengine
 
 on:
     workflow_dispatch:
-    # 只匹配标签推送：push 分支不会触发，推 v* 标签必定构建。
+    # 只匹配标签推送：push 分支不会触发，推任意标签都会构建。
     # 注意不要在这里再加 paths：tags 与 paths 同时存在时两者必须同时满足，
     # 而推标签通常没有文件变更，会导致永远不触发
     push:
@@ -69,6 +69,32 @@ jobs:
                 run: |
                     printf 'TAG是%s\n' "$TAG_VERSION" # This will output TAG_VERSION
 
+            # 完整版本号 tag（如 3.2.0 / 3.2.0-rc6）同时作为 tengine 源码版本；
+            # 3.2 这类短 tag 与手动触发仍编译上游最新正式 release。
+            -   name: Resolve tengine source version
+                id: source_version
+                run: |
+                    version=""
+                    if printf '%s' "$TAG_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$'; then
+                        version="$TAG_VERSION"
+                    fi
+                    echo "TENGINE_VERSION=$version" >> "$GITHUB_ENV"
+                    printf 'tengine 源码版本: %s\n' "${version:-上游最新正式 release}"
+
+            # prerelease（带语义化预发布后缀，如 -rc6 / -beta1）不覆盖 latest，
+            # 避免使用 latest 的业务被意外升级到 rc。
+            -   name: Compute image tags
+                id: image_tags
+                run: |
+                    repo="${ALIYUN_REGISTRY}/${ALIYUN_NAME_SPACE}/tengine"
+                    tags="${repo}:${TAG_VERSION}"
+                    case "$TAG_VERSION" in
+                        *-*) ;;
+                        *) tags="${repo}:latest,${tags}" ;;
+                    esac
+                    echo "tags=$tags" >> "$GITHUB_OUTPUT"
+                    printf '镜像标签: %s\n' "$tags"
+
             -   name: Login to DockerHub
                 uses: docker/login-action@v3
                 with:
@@ -81,6 +107,9 @@ jobs:
                 with:
                     file: Dockerfile
                     context: .
+                    # 空值 = install.sh 取上游最新正式 release
+                    build-args: |
+                        TENGINE_VERSION=${{ env.TENGINE_VERSION }}
                     # platforms: linux/amd64,linux/arm64
                     platforms: linux/amd64
                     push: true
@@ -89,4 +118,4 @@ jobs:
                     #  推送时报 denied: unknown manifest class for application/vnd.oci.empty.v1+json）
                     provenance: false
                     sbom: false
-                    tags: ${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:latest,${{ vars.ALIYUN_REGISTRY }}/${{ vars.ALIYUN_NAME_SPACE }}/tengine:${{ env.TAG_VERSION }}
+                    tags: ${{ steps.image_tags.outputs.tags }}

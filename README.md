@@ -6,13 +6,18 @@
 已编译模块（见 `Dockerfile` 中的 `CONFIG`）：
 
 - `ngx_http_upstream_check_module` 健康检查
-- `headers-more-nginx-module 0.37`（`more_clear_headers` 等）
+- `headers-more-nginx-module 0.42`（`more_clear_headers` 等）
 - `ngx_http_upstream_session_sticky_module` 会话保持
 - 常规 http/stream/mail 模块 + xslt / image_filter / geoip / stream_geoip 动态模块
 
-`TENGINE_VERSION` 构建参数留空时，自动取 GitHub 最新 release。
-CI 不传该参数，因此 **构建的始终是上游最新 release，tag 只是镜像标签**。
-需要固定版本时用本地构建传 `--build-arg`。
+`TENGINE_VERSION` 构建参数留空时，自动取 GitHub 最新 **正式** release（prerelease 不会被选中）。
+CI 中：
+
+- 推送完整版本号 tag（如 `3.2.0`、`3.2.0-rc6`）时，该 tag 同时作为 tengine 源码版本
+- 推送短 tag（如 `3.2`）或手动触发时，编译上游最新正式 release，tag 只作为镜像标签
+- prerelease tag（带 `-` 后缀，如 `-rc6`）只推送 `tengine:<tag>`，不覆盖 `tengine:latest`
+
+需要固定版本时也可本地构建传 `--build-arg`。
 
 ## 镜像内容
 
@@ -40,14 +45,14 @@ CI 不传该参数，因此 **构建的始终是上游最新 release，tag 只�
 | `base-nginx.conf` | 主配置，构建时 COPY 到 `/etc/nginx/nginx.conf` |
 | `base-proxy.conf` | 反代公共配置，COPY 到 `/etc/nginx/conf.d/` |
 | `build.sh` | 本地构建 |
-| `.github/workflows/build.yaml` | CI：amd64/arm64 多架构构建并推送到阿里云 |
+| `.github/workflows/build.yaml` | CI：amd64 构建并推送到阿里云 |
 
 ## 本地构建
 
 ```shell
 ./build.sh
-# 指定 tengine 源码版本
-docker build --pull --no-cache --build-arg TENGINE_VERSION=3.1.0 -t tengine:latest .
+# 指定 tengine 源码版本（支持 prerelease，如 3.2.0-rc6）
+docker build --pull --no-cache --build-arg TENGINE_VERSION=3.2.0-rc6 -t tengine:latest .
 ```
 
 ## CI 构建
@@ -66,6 +71,17 @@ git push origin 3.3                  # 触发构建
 ```
 
 产出 `tengine:3.3` 与 `tengine:latest`。
+
+### 发布 prerelease
+
+tag 为完整版本号时，tag 同时作为 tengine 源码版本；prerelease 不覆盖 `latest`：
+
+```shell
+git tag -a 3.2.0-rc6 -m "tengine 3.2.0-rc6"
+git push origin 3.2.0-rc6
+```
+
+产出 `tengine:3.2.0-rc6`（`tengine:latest` 保持不变）。
 
 ### 覆盖已有版本
 

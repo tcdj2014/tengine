@@ -1,6 +1,6 @@
 #!/bin/sh
 # 编译并安装 tengine 基础镜像内容（在 Dockerfile 的 RUN 中执行）
-# 可选构建参数：TENGINE_VERSION（留空则取上游最新 release）
+# 可选构建参数：TENGINE_VERSION（留空则取上游最新正式 release，prerelease 不会被选中）
 set -e
 
 CONFIG="
@@ -49,11 +49,11 @@ CONFIG="
         --with-http_v2_module \
         --with-cc-opt=-Wno-error=unterminated-string-initialization \
         --add-module=modules/ngx_http_upstream_check_module \
-        --add-module=modules/headers-more-nginx-module-0.37 \
+        --add-module=modules/headers-more-nginx-module-0.42 \
         --add-module=modules/ngx_http_upstream_session_sticky_module \
         "
 
-# 未指定 tengine 版本时，取上游最新 release
+# 未指定 tengine 版本时，取上游最新正式 release（GitHub 的 latest 接口不含 prerelease）
 if [ -z "$TENGINE_VERSION" ]; then
     TENGINE_VERSION=$(wget -qO- -t5 -T10 "https://api.github.com/repos/alibaba/tengine/releases/latest" \
         | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
@@ -86,7 +86,7 @@ tar -zxC /usr/src -f tengine.tar.gz
 rm tengine.tar.gz
 cd /usr/src/tengine-$TENGINE_VERSION
 
-curl -L "https://github.com/openresty/headers-more-nginx-module/archive/v0.37.tar.gz" -o more.tar.gz
+curl -L "https://github.com/openresty/headers-more-nginx-module/archive/v0.42.tar.gz" -o more.tar.gz
 tar -zxC modules -f more.tar.gz
 rm more.tar.gz
 ls -l modules
