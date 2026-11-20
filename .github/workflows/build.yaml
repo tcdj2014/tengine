@@ -69,31 +69,47 @@ jobs:
                 run: |
                     printf 'TAG是%s\n' "$TAG_VERSION" # This will output TAG_VERSION
 
-            # 完整版本号 tag（如 3.2.0 / 3.2.0-rc6）同时作为 tengine 源码版本；
-            # 3.2 这类短 tag 与手动触发仍编译上游最新正式 release。
+            # 推 tag 时 tag 名直接作为 tengine 版本号（如 3.2.0-rc6），
+            # 不再区分长短 tag；手动触发没有版本号，仍编译上游最新正式 release。
             -   name: Resolve tengine source version
                 id: source_version
                 run: |
                     version=""
-                    if printf '%s' "$TAG_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$'; then
+                    if [ "${{ github.ref_type }}" = "tag" ]; then
                         version="$TAG_VERSION"
                     fi
+
+                    # tag 即源码版本，必须在上游存在，否则终止构建
+                    if [ -n "$version" ]; then
+                        status=$(curl -s -o /dev/null -w '%{http_code}' \
+                            "https://api.github.com/repos/alibaba/tengine/git/ref/tags/$version")
+                        if [ "$status" = "404" ]; then
+                            echo "::error::上游不存在 tengine 版本 tag: $version"
+                            exit 1
+                        elif [ "$status" != "200" ]; then
+                            echo "::error::校验 tengine 版本 tag 失败: $version (HTTP $status)"
+                            exit 1
+                        fi
+                    fi
+
                     echo "TENGINE_VERSION=$version" >> "$GITHUB_ENV"
                     printf 'tengine 源码版本: %s\n' "${version:-上游最新正式 release}"
 
-            # prerelease（带语义化预发布后缀，如 -rc6 / -beta1）不覆盖 latest，
-            # 避免使用 latest 的业务被意外升级到 rc。
+            # 只有 tag 与上游最新正式 release 一致时才推送 latest；
+            # 其余 tag（含 prerelease）只推送 tengine:<tag>。
             -   name: Compute image tags
                 id: image_tags
                 run: |
                     repo="${ALIYUN_REGISTRY}/${ALIYUN_NAME_SPACE}/tengine"
+                    latest=$(curl -fsSL "https://api.github.com/repos/alibaba/tengine/releases/latest" \
+                        | grep '"tag_name"' | head -n 1 \
+                        | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')
                     tags="${repo}:${TAG_VERSION}"
-                    case "$TAG_VERSION" in
-                        *-*) ;;
-                        *) tags="${repo}:latest,${tags}" ;;
-                    esac
+                    if [ "$TAG_VERSION" = "$latest" ]; then
+                        tags="${repo}:latest,${tags}"
+                    fi
                     echo "tags=$tags" >> "$GITHUB_OUTPUT"
-                    printf '镜像标签: %s\n' "$tags"
+                    printf '上游最新正式 release: %s\n镜像标签: %s\n' "$latest" "$tags"
 
             -   name: Login to DockerHub
                 uses: docker/login-action@v3

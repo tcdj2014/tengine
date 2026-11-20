@@ -13,9 +13,9 @@
 `TENGINE_VERSION` 构建参数留空时，自动取 GitHub 最新 **正式** release（prerelease 不会被选中）。
 CI 中：
 
-- 推送完整版本号 tag（如 `3.2.0`、`3.2.0-rc6`）时，该 tag 同时作为 tengine 源码版本
-- 推送短 tag（如 `3.2`）或手动触发时，编译上游最新正式 release，tag 只作为镜像标签
-- prerelease tag（带 `-` 后缀，如 `-rc6`）只推送 `tengine:<tag>`，不覆盖 `tengine:latest`
+- 推 tag 时，tag 名必须与上游 tengine 版本号一致（如 `3.2.0-rc6`），同时作为镜像标签和源码版本；上游不存在该 tag 时构建直接失败
+- 仅当 tag 与上游最新正式 release（`releases/latest`）一致时才推送 `tengine:latest`；rc 等其余 tag 只推 `tengine:<tag>`
+- 手动触发时没有版本号，编译上游最新正式 release
 
 需要固定版本时也可本地构建传 `--build-arg`。
 
@@ -65,16 +65,16 @@ docker build --pull --no-cache --build-arg TENGINE_VERSION=3.2.0-rc6 -t tengine:
 ### 发布新版本
 
 ```shell
-git push origin main                 # 先推代码，不触发构建
-git tag -a 3.3 -m "tengine 3.3"      # tag 名即镜像版本标签
-git push origin 3.3                  # 触发构建
+git push origin main                   # 先推代码，不触发构建
+git tag -a 3.2.0 -m "tengine 3.2.0"    # tag 名必须与上游 tengine 版本号一致
+git push origin 3.2.0                  # 触发构建
 ```
 
-产出 `tengine:3.3` 与 `tengine:latest`。
+产出 `tengine:3.2.0` 与 `tengine:latest`。
 
 ### 发布 prerelease
 
-tag 为完整版本号时，tag 同时作为 tengine 源码版本；prerelease 不覆盖 `latest`：
+tag 同时作为镜像标签和 tengine 源码版本；`3.2.0-rc6` 不是最新正式 release，因此不覆盖 `latest`：
 
 ```shell
 git tag -a 3.2.0-rc6 -m "tengine 3.2.0-rc6"
@@ -88,13 +88,13 @@ git push origin 3.2.0-rc6
 改动需要重新产出同名镜像时，强制更新 tag（同样会触发一次新构建）：
 
 ```shell
-git tag -f -a 3.2 -m "tengine 3.2" HEAD
-git push -f origin 3.2
+git tag -f -a 3.2.0-rc6 -m "tengine 3.2.0-rc6" HEAD
+git push -f origin 3.2.0-rc6
 ```
 
 注意：
 
-- `tengine:latest` 每次构建都会被覆盖，业务侧引用建议固定版本号（如 `tengine:3.2`）
+- 只有 tag 与上游最新正式 release 一致时才覆盖 `tengine:latest`，rc 等其余 tag 不会；业务侧引用建议固定版本号（如 `tengine:3.2.0`）
 - 强制覆盖 tag 会改写远端 tag，其他人已经拉取的旧 tag 需要手动更新
 
 需要配置仓库 Variables / Secrets：
@@ -106,4 +106,4 @@ git push -f origin 3.2
 | `ALIYUN_REGISTRY_USER` | Secrets | 仓库用户名 |
 | `ALIYUN_REGISTRY_PASSWORD` | Secrets | 仓库密码 |
 
-推送结果：`<registry>/<namespace>/tengine:latest` 与 `tengine:<tag>`（如 `tengine:3.2`）。
+推送结果：`tengine:<tag>`（如 `tengine:3.2.0`），tag 与上游最新正式 release 一致时额外推送 `tengine:latest`。
